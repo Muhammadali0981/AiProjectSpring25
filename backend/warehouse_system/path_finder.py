@@ -1,7 +1,7 @@
 from grid import Grid, ClassType
 from robot import Robot
 import heapq
-import copy
+
 class PathFinder:
     def __init__(self, grid: Grid):
         self.grid = grid
@@ -29,17 +29,16 @@ class PathFinder:
 
 
     def find_path(self, robot: Robot, goal: tuple) -> list:
-        """A* search algorithm to find the least battery-consuming path"""
+        """A* search algorithm to find the shortest path considering movement rules."""
         self.grid.convert_to_adjacency_list()
         adjacency_list = self.grid.get_adjacency_list()
-        
+
         pq = []
-        start = robot.current_position
-        heapq.heappush(pq, (self.heuristic(start, goal), start))
-        
-        g_score = {start: 0}
-        parent = {start: None}
-        
+        heapq.heappush(pq, (self.heuristic(robot.current_position, goal), robot.current_position))
+
+        g_score = {robot.current_position: 0}
+        parent = {robot.current_position: None}
+
         while pq:
             _, node = heapq.heappop(pq)
 
@@ -50,17 +49,18 @@ class PathFinder:
                     node = parent[node]
                 path.reverse()
                 return path
-            
-            for neighbor in adjacency_list[node]:
-                tile_cost = self.get_tile_cost(neighbor, robot.is_carrying_box)
-                new_g = g_score[node] + tile_cost
+
+            for neighbor in adjacency_list.get(node, []):
+                new_g = g_score[node] + self.get_tile_cost(neighbor, robot.is_carrying_box)
 
                 if neighbor not in g_score or new_g < g_score[neighbor]:
                     g_score[neighbor] = new_g
                     f_score = new_g + self.heuristic(neighbor, goal)
                     heapq.heappush(pq, (f_score, neighbor))
                     parent[neighbor] = node
-        
+
         return None
+
+
 
 

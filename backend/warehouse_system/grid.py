@@ -7,7 +7,6 @@ class ClassType:
     BOX = 5
     CHARGING_STATION = 6
 
-directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 class Grid:
     def __init__(self, width: int, height: int):
@@ -15,18 +14,21 @@ class Grid:
         self.height = height
         self.grid = [[ClassType.EMPTY for _ in range(width)] for _ in range(height)]
         self.adjacency_list = {}
+        self.directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     
     def convert_to_adjacency_list(self):
         self.adjacency_list = {}
         for r in range(self.height):
             for c in range(self.width):
-                if self.grid[r][c] in [ClassType.EMPTY, ClassType.BOX]:  # walkable tiles
+                if self.grid[r][c] not in [ClassType.OBSTACLE, ClassType.ROBOT]:
                     node = (r, c)
                     self.adjacency_list[node] = []
-                    for dr, dc in directions:
+                    for dr, dc in self.directions:
                         nr, nc = r + dr, c + dc
-                        if 0 <= nr < self.height and 0 <= nc < self.width and self.grid[nr][nc] in [ClassType.EMPTY, ClassType.BOX]:
-                            self.adjacency_list[node].append((nr, nc))
+                        if 0 <= nr < self.height and 0 <= nc < self.width:
+                            neighbor_type = self.grid[nr][nc]
+                            if neighbor_type in [ClassType.EMPTY, ClassType.RAMP, ClassType.SLOPE]:
+                                self.adjacency_list[node].append((nr, nc))
 
 
     def get_cell_cost(self, x: int, y: int):

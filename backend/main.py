@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, Body
-from warehouse_system.grid import Grid
+from warehouse_system.grid import Grid, ClassType
 from warehouse_system.robot import Robot
 from warehouse_system.task import Task
 from warehouse_system.schedule import Scheduler
@@ -56,7 +56,7 @@ def view_current_state():
 # Create running methods
 
 class Task_Params(BaseModel):
-    task_id: int
+    task_id: str
     task_type: str
     task_shift: str
     task_pickup_location: tuple[int, int]
@@ -73,7 +73,7 @@ def init_task(request: Init_Task_Request = Body(...)):
         return {"grid_error": "Grid has not been initialized"}
     
     for task in request.tasks:
-        task = Task(task.task_id, task.task_type, task.task_shift, task.task_pickup_location, task.task_dropoff_location)
+        task = Task(int(task.task_id), task.task_type, task.task_shift, task.task_pickup_location, task.task_dropoff_location)
         tasks.append(task)
     return {"task": task.serialize() for task in tasks}
 

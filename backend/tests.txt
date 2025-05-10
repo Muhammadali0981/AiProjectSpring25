@@ -1,0 +1,25 @@
+curl -X POST http://127.0.0.1:8000/api/init/task \
+-H "Content-Type: application/json" \
+-d '{
+  "tasks": [
+    {
+      "task_id": "1",
+      "task_type": "TypeA",
+      "task_shift": "day",
+      "task_pickup_location": [0, 0],
+      "task_dropoff_location": [4, 4]
+    }
+  ]
+}'
+
+curl -X POST http://127.0.0.1:8000/api/init/robot \
+-H "Content-Type: application/json" \
+-d '{
+  "robots": [
+    {
+      "robot_id": "R1",
+      "robot_type": "TypeA",
+      "shift": "day"
+    }
+  ]
+}'

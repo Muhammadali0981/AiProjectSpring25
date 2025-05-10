@@ -18,12 +18,13 @@ class PathFinder:
             ClassType.EMPTY: 1,
             ClassType.RAMP: 2,
             ClassType.SLOPE: 3,
+            ClassType.CHARGING_STATION: 1,
         }
         
         cost = base_costs.get(tile_type, float('inf'))
         
         if carrying_box:
-            cost *= 1.5 
+            cost *= 2
     
         return cost
 
@@ -47,8 +48,7 @@ class PathFinder:
                 while node is not None:
                     path.append(node)
                     node = parent[node]
-                path.reverse()
-                return path
+                return list(reversed(path))
 
             for neighbor in adjacency_list.get(node, []):
                 new_g = g_score[node] + self.get_tile_cost(neighbor, robot.is_carrying_box)
@@ -61,6 +61,7 @@ class PathFinder:
 
         return None
 
-
-
-
+    def compute_battery_cost(self, path: list, carrying: bool) -> int:
+        if not path:
+            return float('inf')
+        return int(len(path) * (2 if carrying else 1))

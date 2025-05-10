@@ -27,14 +27,8 @@ class Grid:
                         nr, nc = r + dr, c + dc
                         if 0 <= nr < self.height and 0 <= nc < self.width:
                             neighbor_type = self.grid[nr][nc]
-                            if neighbor_type in [ClassType.EMPTY, ClassType.RAMP, ClassType.SLOPE]:
+                            if neighbor_type in [ClassType.EMPTY, ClassType.RAMP, ClassType.SLOPE, ClassType.CHARGING_STATION]:
                                 self.adjacency_list[node].append((nr, nc))
-
-
-    def get_cell_cost(self, x: int, y: int):
-        if self.grid[y][x] == ClassType.RAMP:
-            return 2
-        return 1
     
     def set_cell(self, x: int, y: int, cell_type: ClassType):
         self.grid[y][x] = cell_type
@@ -45,13 +39,12 @@ class Grid:
     def get_adjacency_list(self):
         return self.adjacency_list
     
-    def get_grid(self):
-        return self.grid
-
-    def get_width(self):
-        return self.width
-    
-    def get_height(self):
-        return self.height
+    def find_charging_stations(self):
+        charging_stations = []
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.grid[r][c] == ClassType.CHARGING_STATION:
+                    charging_stations.append((r, c))
+        return charging_stations
 
 

@@ -1,8 +1,8 @@
 from ortools.sat.python import cp_model
-from robot import Robot
-from grid import Grid, ClassType
-from path_finder import PathFinder
-from task import Task
+from warehouse_system.grid import Grid, ClassType
+from warehouse_system.path_finder import PathFinder
+from warehouse_system.task import Task
+from warehouse_system.robot import Robot
 
 class Scheduler:
     def __init__(self, grid: Grid, tasks: list[Task], robots: list[Robot]):
@@ -151,6 +151,13 @@ class Scheduler:
                             'path_to_charge': charge_matrix[i][j]
                         }
         return result
+
+    def serialize(self):
+        return {
+            "tasks": [task.serialize() for task in self.tasks],
+            "grid": self.grid.serialize(),
+            "schedule": self.compute_global_optimal_schedule()
+        }
 
     @staticmethod
     def print_schedule(schedule):

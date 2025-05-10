@@ -1,5 +1,5 @@
-from grid import Grid, ClassType
-from robot import Robot
+from warehouse_system.grid import Grid, ClassType
+from warehouse_system.robot import Robot
 import heapq
 
 class PathFinder:

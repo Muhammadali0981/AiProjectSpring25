@@ -47,4 +47,20 @@ class Grid:
                     charging_stations.append((r, c))
         return charging_stations
 
-
+    def serialize(self):
+        return {
+            "width": self.width,
+            "height": self.height,
+            "grid": self.grid
+        }
+    
+    @classmethod
+    def deserialize(cls, data: dict):
+        gridobj = cls(
+            data["width"],
+            data["height"]
+        )
+        for i in range(gridobj.height):
+            for j in range(gridobj.width):
+                gridobj.grid[i][j] = data["grid"][i][j]
+        return gridobj

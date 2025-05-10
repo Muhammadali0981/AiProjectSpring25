@@ -2,13 +2,14 @@ from ortools.sat.python import cp_model
 from robot import Robot
 from grid import Grid, ClassType
 from path_finder import PathFinder
+from task import Task
 
 class Scheduler:
-    def __init__(self, grid: Grid, tasks, robots, task_locations):
+    def __init__(self, grid: Grid, tasks: list[Task], robots: list[Robot]):
         self.grid = grid
         self.tasks = tasks
         self.robots = robots
-        self.task_locations = task_locations   
+        self.task_locations = {task.task_id: {"pickup": task.pickup_location, "dropoff": task.dropoff_location} for task in tasks}
 
     @staticmethod
     def is_type_compatible(robot_type, task_type):
@@ -32,8 +33,8 @@ class Scheduler:
         # decision vars: assignment[i][j] = 1 if task i assigned to robot j
         assignment = [
             [
-                model.NewBoolVar(f"task_{i}_robot_{j}") if self.is_type_compatible(self.robots[j].robot_type, self.tasks[i]['type']) and
-                self.is_shift_compatible(self.robots[j].shift, self.tasks[i]['shift']) else model.NewConstant(0)
+                model.NewBoolVar(f"task_{i}_robot_{j}") if self.is_type_compatible(self.robots[j].robot_type, self.tasks[i].type) and
+                self.is_shift_compatible(self.robots[j].shift, self.tasks[i].shift) else model.NewConstant(0)
                 for j in range(num_robots)
             ] for i in range(num_tasks)
         ]
@@ -56,11 +57,11 @@ class Scheduler:
         charging_stations = self.grid.find_charging_stations()
 
         for i, task in enumerate(self.tasks):
-            pickup = self.task_locations[task['id']]['pickup']
-            dropoff = self.task_locations[task['id']]['dropoff']
+            pickup = self.task_locations[task.task_id]['pickup']
+            dropoff = self.task_locations[task.task_id]['dropoff']
 
             for j, robot in enumerate(self.robots):
-                if not (self.is_type_compatible(robot.robot_type, task['type']) and self.is_shift_compatible(robot.shift, task['shift'])):
+                if not (self.is_type_compatible(robot.robot_type, task.type) and self.is_shift_compatible(robot.shift, task.shift)):
                     continue
 
                 original_pos = robot.current_position
@@ -142,7 +143,7 @@ class Scheduler:
             for i, task in enumerate(self.tasks):
                 for j, robot in enumerate(self.robots):
                     if (i, j) in valid_pairs and solver.Value(assignment[i][j]) == 1:
-                        result[task['id']] = {
+                        result[task.task_id] = {
                             'robot_id': robot.robot_id,
                             'estimated_battery_cost': cost_matrix[i][j],
                             'path_to_pickup': path_matrix[i][j],

@@ -57,10 +57,11 @@ class Grid:
     @classmethod
     def deserialize(cls, data: dict):
         gridobj = cls(
-            data["width"],
-            data["height"]
+            data["width"] or 5,
+            data["height"] or 5
         )
-        for i in range(gridobj.height):
-            for j in range(gridobj.width):
-                gridobj.grid[i][j] = data["grid"][i][j]
+        if data["grid"] is not None:
+            for i in range(gridobj.height):
+                for j in range(gridobj.width):
+                    gridobj.grid[i][j] = data["grid"][i][j]
         return gridobj

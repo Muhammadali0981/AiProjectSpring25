@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from warehouse_system.warehouse import Warehouse
 from warehouse_system.grid import Grid, CellType
 from warehouse_system.robot import Robot
@@ -8,6 +9,14 @@ from warehouse_system.enums import RobotType, Shift
 from pydantic import BaseModel
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Cell_Params(BaseModel):
     position: list[int]
@@ -62,6 +71,7 @@ def add_robot(request: WarehouseRequest):
         if warehouse.grid.get_cell(x, y) != CellType.EMPTY:
             return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"cell_error": f"Robot already exists at position {robot_params.current_position}"})
         
+        warehouse.remove_robot_by_id(robot_params.robot_id)
         robot = Robot(
             robot_params.robot_id,
             RobotType(robot_params.robot_type),
@@ -89,6 +99,8 @@ def set_cell(request: WarehouseRequest):
     if x < 0 or x >= warehouse.grid.width or y < 0 or y >= warehouse.grid.height:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": f"Invalid position: {request.cell_params.position}"})
     
+    if warehouse.grid.get_cell(x, y) == CellType.ROBOT:
+        warehouse.remove_robot_at(x, y)
     warehouse.grid.set_cell(x, y, CellType(request.cell_params.cell_type))
     
     return { "warehouse": warehouse.serialize() }

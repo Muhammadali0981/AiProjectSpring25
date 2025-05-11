@@ -1,39 +1,31 @@
-from grid import Grid, ClassType
-from robot import Robot
+from warehouse_system.grid import Grid, CellType
+from warehouse_system.robot import Robot
 import heapq
 
+base_costs = {
+    CellType.EMPTY: 1,
+    CellType.RAMP: 2,
+    CellType.SLOPE: 3,
+    CellType.CHARGING_STATION: 1,
+}
+
 class PathFinder:
-    def __init__(self, grid: Grid):
+    def __init__(self, grid: Grid, pickup_locations: list[tuple]):
         self.grid = grid
+        self.pickup_locations = set(pickup_locations)
     
     def heuristic(self, a: tuple, b: tuple) -> float:
         """Manhattan distance heuristic"""
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
     
-    def get_tile_cost(self, position: tuple, carrying_box: bool) -> float:
-        r, c = position
-        tile_type = self.grid.get_cell(c, r)
-        
-        base_costs = {
-            ClassType.EMPTY: 1,
-            ClassType.RAMP: 2,
-            ClassType.SLOPE: 3,
-            ClassType.CHARGING_STATION: 1,
-        }
-        
+    def get_tile_cost(self, tile_type: CellType, carrying_box: bool) -> float:
         cost = base_costs.get(tile_type, float('inf'))
-        
         if carrying_box:
             cost *= 2
-    
         return cost
-
 
     def find_path(self, robot: Robot, goal: tuple) -> list:
         """A* search algorithm to find the shortest path considering movement rules."""
-        self.grid.convert_to_adjacency_list()
-        adjacency_list = self.grid.get_adjacency_list()
-
         pq = []
         heapq.heappush(pq, (self.heuristic(robot.current_position, goal), robot.current_position))
 
@@ -50,14 +42,16 @@ class PathFinder:
                     node = parent[node]
                 return list(reversed(path))
 
-            for neighbor in adjacency_list.get(node, []):
-                new_g = g_score[node] + self.get_tile_cost(neighbor, robot.is_carrying_box)
+            for r, c, tile_type in self.grid.get_neighbors(node[0], node[1]):
+                if tile_type in [CellType.OBSTACLE, CellType.ROBOT, CellType.BOX] and (r, c) != goal:
+                    continue
+                new_g = g_score[node] + self.get_tile_cost(tile_type, robot.is_carrying_box)
 
-                if neighbor not in g_score or new_g < g_score[neighbor]:
-                    g_score[neighbor] = new_g
-                    f_score = new_g + self.heuristic(neighbor, goal)
-                    heapq.heappush(pq, (f_score, neighbor))
-                    parent[neighbor] = node
+                if (r, c) not in g_score or new_g < g_score[(r, c)]:
+                    g_score[(r, c)] = new_g
+                    f_score = new_g + self.heuristic((r, c), goal)
+                    heapq.heappush(pq, (f_score, (r, c)))
+                    parent[(r, c)] = node
 
         return None
 

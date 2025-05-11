@@ -1,8 +1,9 @@
 from ortools.sat.python import cp_model
-from robot import Robot
-from grid import Grid, ClassType
-from path_finder import PathFinder
-from task import Task
+from warehouse_system.grid import Grid
+from warehouse_system.path_finder import PathFinder
+from warehouse_system.task import Task
+from warehouse_system.robot import Robot
+from warehouse_system.enums import RobotType, TaskType, Shift
 
 class Scheduler:
     def __init__(self, grid: Grid, tasks: list[Task], robots: list[Robot]):
@@ -12,20 +13,24 @@ class Scheduler:
         self.task_locations = {task.task_id: {"pickup": task.pickup_location, "dropoff": task.dropoff_location} for task in tasks}
 
     @staticmethod
-    def is_type_compatible(robot_type, task_type):
-        if robot_type == 'general':
-            return task_type in ['fragile', 'heavy', 'standard']
-        if robot_type == 'standard':
-            return task_type == 'standard'
-        return robot_type == task_type
+    def is_type_compatible(robot_type: RobotType, task_type: TaskType):
+        if robot_type == RobotType.GENERAL:
+            return task_type in [TaskType.FRAGILE, TaskType.HEAVY, TaskType.STANDARD]
+        elif robot_type == RobotType.STANDARD:
+            return task_type in [TaskType.STANDARD]
+        elif robot_type == RobotType.FRAGILE:
+            return task_type in [TaskType.FRAGILE]
 
     @staticmethod
-    def is_shift_compatible(robot_shift, task_shift):
-        return robot_shift == '24/7' or robot_shift == task_shift
+    def is_shift_compatible(robot_shift: Shift, task_shift: Shift):
+        return robot_shift == Shift.TWENTY_FOUR_SEVEN or robot_shift == task_shift
 
     def compute_global_optimal_schedule(self):
         model = cp_model.CpModel()
-        pathfinder = PathFinder(self.grid)
+
+        pickup_locations = [task.pickup_location for task in self.tasks]
+
+        pathfinder = PathFinder(self.grid, pickup_locations)
 
         num_tasks = len(self.tasks)
         num_robots = len(self.robots)
@@ -151,6 +156,9 @@ class Scheduler:
                             'path_to_charge': charge_matrix[i][j]
                         }
         return result
+
+    def serialize(self):
+        return self.compute_global_optimal_schedule()
 
     @staticmethod
     def print_schedule(schedule):

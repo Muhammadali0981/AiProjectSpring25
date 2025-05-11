@@ -9,10 +9,10 @@ class Grid:
         self.adjacency_list = {}
         self.directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-    def get_neighbors(self, x: int, y: int) -> List[Tuple[int, int, CellType]]:
+    def get_neighbors(self, row: int, col: int) -> List[Tuple[int, int, CellType]]:
         neighbors: List[Tuple[int, int, CellType]] = []
         for dr, dc in self.directions:
-            nr, nc = y + dr, x + dc
+            nr, nc = row + dr, col + dc
             if 0 <= nr < self.height and 0 <= nc < self.width:
                 neighbors.append((nr, nc, self.grid[nr][nc]))
         return neighbors

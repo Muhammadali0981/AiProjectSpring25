@@ -30,6 +30,21 @@ class Warehouse:
 
   def add_task(self, task: Task):
     self.__tasks.append(task)
+    self.grid.set_cell(task.pickup_location[0], task.pickup_location[1], CellType.BOX)
+
+  def remove_robot_by_id(self, robot_id: str):
+    for i, r in enumerate(self.__robots):
+      if r.robot_id == robot_id:
+        self.__robots.pop(i)
+        self.grid.set_cell(r.current_position[0], r.current_position[1], CellType.EMPTY)
+        break
+    
+  def remove_robot_at(self, row: int, col: int):
+    for i, r in enumerate(self.__robots):
+      if r.current_position[0] == row and r.current_position[1] == col:
+        self.__robots.pop(i)
+        self.grid.set_cell(row, col, CellType.EMPTY)
+        break
 
   def serialize(self):
     return {

@@ -10,9 +10,8 @@ base_costs = {
 }
 
 class PathFinder:
-    def __init__(self, grid: Grid, pickup_locations: list[tuple]):
+    def __init__(self, grid: Grid):
         self.grid = grid
-        self.pickup_locations = set(pickup_locations)
     
     def heuristic(self, a: tuple, b: tuple) -> float:
         """Manhattan distance heuristic"""
@@ -43,8 +42,11 @@ class PathFinder:
                 return list(reversed(path))
 
             for r, c, tile_type in self.grid.get_neighbors(node[0], node[1]):
-                if tile_type in [CellType.OBSTACLE, CellType.ROBOT, CellType.BOX] and (r, c) != goal:
+                if tile_type == CellType.OBSTACLE:
                     continue
+                if tile_type in [CellType.BOX] and (r, c) != goal:
+                    continue
+
                 new_g = g_score[node] + self.get_tile_cost(tile_type, robot.is_carrying_box)
 
                 if (r, c) not in g_score or new_g < g_score[(r, c)]:

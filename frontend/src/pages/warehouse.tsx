@@ -263,7 +263,6 @@ export function WarehouseVisualization() {
   const handleRunSchedule = async () => {
     if (!scheduleData || !warehouseData) return;
 
-    // Check for duplicate dropoff locations
     const dropoffSet = new Set<string>();
     for (const task of warehouseData.tasks) {
       const dropoff = task.dropoff_location;
@@ -280,13 +279,11 @@ export function WarehouseVisualization() {
     setIsRunningSchedule(true);
     setRobotAnimations({});
 
-    // Get robots with assigned tasks in schedule order
     const robotsWithTasks = warehouseData.robots.filter(robot => {
       return Object.values(scheduleData).some(s => s.robot_id === robot.robot_id);
     });
 
     for (const robot of robotsWithTasks) {
-      // Find the schedule for this robot
       const schedule = Object.values(scheduleData).find(s => s.robot_id === robot.robot_id);
       if (!schedule) continue;
       const pickupPath = (schedule.path_to_charge ?? []).concat(schedule.path_to_pickup) || [];
@@ -303,7 +300,6 @@ export function WarehouseVisualization() {
         continue;
       }
 
-      // Check if any cell in the path is a charging station
       let passedChargingStation = false;
       const fullPath = [...pickupPath, ...dropoffPath];
       for (const [y, x] of fullPath) {
@@ -313,14 +309,11 @@ export function WarehouseVisualization() {
         }
       }
 
-      // Check if there is a box at the pickup location
       const boxAtPickup = warehouseData.grid.grid[pickup[0]][pickup[1]] === 'box';
 
       if (boxAtPickup) {
-        // Animate along pickup path
         for (let i = 0; i < pickupPath.length; i++) {
           setRobotAnimations(prev => ({ ...prev, [robot.robot_id]: pickupPath[i] }));
-          // If the robot reaches the pickup cell, remove the box
           if (pickupPath[i][0] === pickup[0] && pickupPath[i][1] === pickup[1]) {
             setWarehouseData(prev => {
               if (!prev) return prev;
@@ -342,7 +335,6 @@ export function WarehouseVisualization() {
             animationTimeouts.current.push(t);
           });
         }
-        // Animate along dropoff path, but stop before the last cell
         for (let i = 0; i < dropoffPath.length - 1; i++) {
           setRobotAnimations(prev => ({ ...prev, [robot.robot_id]: dropoffPath[i] }));
           await new Promise(res => {
@@ -350,7 +342,6 @@ export function WarehouseVisualization() {
             animationTimeouts.current.push(t);
           });
         }
-        // Place the box at the dropoff cell
         setWarehouseData(prev => {
           if (!prev) return prev;
           return {
@@ -364,7 +355,6 @@ export function WarehouseVisualization() {
               )
             },
             tasks: prev.tasks.filter(t => {
-              // Remove the task if its pickup and dropoff match
               return !(t.pickup_location[0] === pickup[0] && t.pickup_location[1] === pickup[1] && t.dropoff_location[0] === dropoff[0] && t.dropoff_location[1] === dropoff[1]);
             })
           };
@@ -373,7 +363,6 @@ export function WarehouseVisualization() {
           const t = setTimeout(res, 500);
           animationTimeouts.current.push(t);
         });
-        // Move to dropoff and update battery (robot stays at cell before dropoff)
         const stopCell = dropoffPath.length > 1 ? dropoffPath[dropoffPath.length - 2] : pickup;
         setWarehouseData(prev => {
           if (!prev) return prev;
@@ -415,7 +404,6 @@ export function WarehouseVisualization() {
         });
       } else {
         const initialPos = pickupPath.at(0);
-        // Normal movement: animate all the way to the dropoff cell
         for (let i = 0; i < pickupPath.length; i++) {
           setRobotAnimations(prev => ({ ...prev, [robot.robot_id]: pickupPath[i] }));
           await new Promise(res => {
@@ -430,7 +418,6 @@ export function WarehouseVisualization() {
             animationTimeouts.current.push(t);
           });
         }
-        // Move to dropoff and update battery (robot ends at dropoff)
         setWarehouseData(prev => {
           if (!prev) return prev;
           return {
@@ -457,7 +444,6 @@ export function WarehouseVisualization() {
               };
             }),
             tasks: prev.tasks.filter(t => {
-              // Remove the task if its pickup and dropoff match
               return !(t.pickup_location[0] === pickup[0] && t.pickup_location[1] === pickup[1] && t.dropoff_location[0] === dropoff[0] && t.dropoff_location[1] === dropoff[1]);
             })
           };

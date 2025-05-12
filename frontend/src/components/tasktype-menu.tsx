@@ -68,8 +68,8 @@ export function TaskTypeMenu({
       taskId,
       taskType,
       shift,
-      [pickupYNum, pickupXNum],
-      [dropoffYNum, dropoffXNum]
+      [pickupXNum, pickupYNum],
+      [dropoffXNum, dropoffYNum]
     );
     setIsOpen(false);
   };

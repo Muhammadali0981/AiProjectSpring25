@@ -3,7 +3,7 @@ from warehouse_system.grid import Grid
 from warehouse_system.path_finder import PathFinder
 from warehouse_system.task import Task
 from warehouse_system.robot import Robot
-from warehouse_system.enums import RobotType, TaskType, Shift
+from warehouse_system.enums import RobotType, TaskType, Shift, CellType
 
 class Scheduler:
     def __init__(self, grid: Grid, tasks: list[Task], robots: list[Robot]):
@@ -28,9 +28,7 @@ class Scheduler:
     def compute_global_optimal_schedule(self):
         model = cp_model.CpModel()
 
-        pickup_locations = [task.pickup_location for task in self.tasks]
-
-        pathfinder = PathFinder(self.grid, pickup_locations)
+        pathfinder = PathFinder(self.grid)
 
         num_tasks = len(self.tasks)
         num_robots = len(self.robots)
@@ -71,7 +69,8 @@ class Scheduler:
 
                 original_pos = robot.current_position
                 original_battery_level = robot.battery_level
-                
+
+                self.grid.set_cell(original_pos[0], original_pos[1], CellType.EMPTY)
                 robot.is_carrying_box = False
                 path1 = pathfinder.find_path(robot, pickup)
                 cost1 = pathfinder.compute_battery_cost(path1, False)
@@ -80,8 +79,10 @@ class Scheduler:
                 robot.is_carrying_box = True
                 path2 = pathfinder.find_path(robot, dropoff)
                 cost2 = pathfinder.compute_battery_cost(path2, True)
+                self.grid.set_cell(original_pos[0], original_pos[1], CellType.ROBOT)
 
                 total_cost = cost1 + cost2
+                print(robot.robot_id, task.task_id, total_cost, robot.battery_level)
                 if total_cost <= robot.battery_level:
                     cost_matrix[i][j] = total_cost
                     path_matrix[i][j] = path1

@@ -1,6 +1,6 @@
 # Warehouse Robot Scheduling and Visualization System
 ## Demo Video
-[![image](https://github.com/user-attachments/assets/bacbb3a7-6046-41c3-8a17-475e62ec41b3)]([https://drive.google.com/file/d/FILE_ID/view](https://drive.google.com/file/d/1qPds7T_PVsJfW0BGZGB1oQ05j5uFf7ec/view?usp=sharing))
+[![image](https://github.com/user-attachments/assets/bacbb3a7-6046-41c3-8a17-475e62ec41b3)](https://drive.google.com/file/d/1qPds7T_PVsJfW0BGZGB1oQ05j5uFf7ec/view?usp=sharing)
 ## Project Description
 
 This project is a comprehensive warehouse robot scheduling and visualization system. It consists of a Python-based backend (FastAPI) that models a warehouse environment, robots, and tasks, and a modern React + TypeScript frontend for interactive visualization and management. The system allows users to:
